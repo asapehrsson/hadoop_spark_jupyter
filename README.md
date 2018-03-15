@@ -64,19 +64,30 @@ SparkSession available as 'spark'.
 >>> 
 ```
 
-5: Install juniper notebook
+#### Install juniper notebook
 
 `@ pip install jupyter`
 
-6: Find pyspark to make it importable ([findspark doc on github](https://github.com/minrk/findspark))
+1: Use findspark to simplify pyspark import ([findspark doc on github](https://github.com/minrk/findspark))
 
 `@ pip install findspark`
 
-7: Start Jupyter notebook in web-browser.
+2: Change the Jupyter start-up folder
+Source: https://stackoverflow.com/questions/35254852/how-to-change-the-jupyter-start-up-folder
+
+2.1: Create a configfile `.jupyter\jupyter_notebook_config`
+
+`@ jupyter notebook --generate-config`
+
+Set `#c.NotebookApp.notebook_dir = ''` to folder above this project
+
+3: Start Jupyter notebook in web-browser.
 
 `@ jupyter notebook`
 
  Test installation by open simple_example.ipynb
+
+
  
 #### Install and setup PyCharm
 [Download] (https://www.jetbrains.com/pycharm/download/#section=mac) and install PyCharm
