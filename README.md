@@ -99,3 +99,7 @@ Use python3 - change settings
 File -> Default Settings -> Project Interpreter
 For project: PyCharm -> Preferences -> Project: <name> -> Project Interpreter
 ```
+
+#### test python interactively 
+`@ ipython`
+
