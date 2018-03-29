@@ -1,5 +1,7 @@
 from __future__ import print_function
 
+import movielens_helper as mh
+import sys
 from pyspark.sql.functions import *
 from pyspark.sql.types import *
 
@@ -24,7 +26,7 @@ def useCustomSchema(spark):
         .read \
         .option("header", "true") \
         .schema(schema) \
-        .csv("/Users/asapehrsson/dev/learn/hadoop_spark_jupyter/data/ml-latest-small/ratings.csv")
+        .csv(mh.get_ratings_path(mh.ROOT_PATH))
 
     return movie_lens_data
 
@@ -34,7 +36,7 @@ def infer_schema(spark):
         .read \
         .option("inferSchema", "true") \
         .option("header", "true") \
-        .csv("/Users/asapehrsson/dev/learn/hadoop_spark_jupyter/data/ml-latest-small/ratings.csv")
+        .csv(mh.get_ratings_path(mh.ROOT_PATH))
     return movie_lens_data
 
 
@@ -44,7 +46,7 @@ def no_of_ratings_per_movie(movie_lens_data):
         .count() \
         .sort(desc("count")) \
         .limit(5) \
-        .explain()
+        .show()
 
 
 def avg_ratings_per_movie(movie_lens_data):
@@ -80,9 +82,10 @@ def main():
     spark.conf.set("spark.sql.shuffle.partitions", "5")
 
     movie_lens_data = infer_schema(spark)
+
     no_of_ratings_per_movie(movie_lens_data)
 
-    print("done")
+    # replace .show() with .explain() to see the operations
 
 
 if __name__ == "__main__":

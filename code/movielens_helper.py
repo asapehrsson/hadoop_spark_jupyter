@@ -23,8 +23,8 @@ MOVIE_LENS_DATA_RELATIVE_PATH = 'data/ml-latest-small'
 
 
 def year_week_from_date_time(datetime):
-
-    if datetime.month == 1 and datetime.week > 50:
+    # days in week 53 in january will be market with last year
+    if datetime.month == 1 and datetime.week > 51:
         result = (datetime.year - 1) * 100 + datetime.week
     else:
         result = datetime.year * 100 + datetime.week
@@ -39,7 +39,6 @@ def year_week_from_timestamp(timestamp):
 
 def add_year_week(df):
     # df[DATETIME_COL_NAME] = df[TIMESTAMP_COL_NAME].apply(lambda x: datetime.fromtimestamp(x))
-    # df[YEAR_WEEK_COL_NAME] = df[DATETIME_COL_NAME].apply(lambda x: x.year * 100 + x.week)
 
     df[YEAR_WEEK_COL_NAME] = df[TIMESTAMP_COL_NAME].apply(lambda x: year_week_from_timestamp(x))
 
@@ -57,7 +56,8 @@ def fill_in_the_blanks(data_df, all_weeks_df):
     # https://data-lessons.github.io/library-python/04-merging-data/
     # this is a left outer join
     result = pd.merge(all_weeks_for_movie, data_df, how='left', left_on=YEAR_WEEK_COL_NAME, right_on=YEAR_WEEK_COL_NAME)
-
+    result.reset_index(inplace=True, drop=True)
+    result.fillna(value=0, inplace=True)
     return result
 
 
@@ -72,22 +72,15 @@ def _prepare_all_year_weeks_df(date_time_min, date_time_max):
 
     last_date_in_series = date_time_max + timedelta(weeks=2)
 
-    # was facing a strange bug here - got 201852, then 201801 and then 201901 when using
-    # subtracting 'current' from last saved timestamp and comparing with 'one_week'
-
-    week = current.week
-    year = current.year
     pending = current
-
     weeks = []
 
     while current <= last_date_in_series:
-        if (current.week > week and current.year == year) or (current.year > year and current.week == 1):
+        if (current.week > pending.week and current.year == pending.year) or \
+                (current.year > pending.year and current.week == 1):
             row = [year_week_from_date_time(pending), "%d" % pending.timestamp(), "%d" % current.timestamp()]
             weeks.append(row)
             pending = current
-            week = current.week
-            year = current.year
 
         current = current + one_day
 
@@ -141,10 +134,12 @@ def get_ratings_path(root_path):
 
 def _test():
     # a small data set, close to each side of year end
+    # 1545609600 2018-12-24, 1546300800 2019-01-01
     data_set_one = {TIMESTAMP_COL_NAME: [1545609600, 1546300800], 'color': ['red', 'green']}
 
     # a small data set, close to beginning of two consecutive years
-    data_set_two = {TIMESTAMP_COL_NAME: [1522244593, 1546300800], 'color': ['red', 'green']}
+    # 1522244593 2017-03-28, 1546300800 2019-01-01
+    data_set_two = {TIMESTAMP_COL_NAME: [1490659200, 1546300800], 'color': ['red', 'green']}
 
     data_df = pd.DataFrame(data_set_two)
     print(data_df)
@@ -152,22 +147,27 @@ def _test():
     data_df = add_year_week(data_df)
     print(data_df)
 
-    all_year_weeks = _prepare_all_year_weeks_df(data_df[DATETIME_COL_NAME].min(), data_df[DATETIME_COL_NAME].max())
+    date_time_min = pd.to_datetime(data_df[TIMESTAMP_COL_NAME].min() * _PD_DATETIME_FACTOR)
+    date_time_max = pd.to_datetime(data_df[TIMESTAMP_COL_NAME].max() * _PD_DATETIME_FACTOR)
+
+    all_year_weeks = _prepare_all_year_weeks_df(date_time_min, date_time_max)
     print(all_year_weeks)
 
     data_df = fill_in_the_blanks(data_df, all_year_weeks)
     print(data_df)
 
 
-def main():
-    # data = get_year_weeks_datetime_df('/Users/asapehrsson/dev/learn/hadoop_spark_jupyter/')
+def _test_weeks_with_53():
+    # 1102938409 2004-12-13, 1168861609 2007-01-15
+    date_time_min = pd.to_datetime(1102938409 * _PD_DATETIME_FACTOR)
+    date_time_max = pd.to_datetime(1168861609 * _PD_DATETIME_FACTOR)
 
-    # print(data)
-    # _test()
-
-    all_year_weeks = _prepare_all_year_weeks_df(pd.to_datetime(1102938409 * _PD_DATETIME_FACTOR),
-                                                pd.to_datetime(1168861609 * _PD_DATETIME_FACTOR))
+    all_year_weeks = _prepare_all_year_weeks_df(date_time_min, date_time_max)
     print(all_year_weeks)
+
+
+def main():
+    _test()
 
 
 if __name__ == '__main__':
