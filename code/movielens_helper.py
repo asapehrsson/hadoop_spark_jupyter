@@ -9,13 +9,18 @@ _PD_DATETIME_FACTOR = 1000000000
 
 ROOT_PATH = '/Users/asapehrsson/dev/learn/hadoop_spark_jupyter/'
 
+# column names
+
 Y_W_TIMESTAMP_LT_COL_NAME = 'lt_timestamp'
 Y_W_TIMESTAMP_GE_COL_NAME = 'ge_timestamp'
 
-RATINGS_COL_NAME = 'ratings'
+RATING_COL_NAME = 'rating'
 DATETIME_COL_NAME = 'datetime'
 TIMESTAMP_COL_NAME = 'timestamp'
 YEAR_WEEK_COL_NAME = 'y_w'
+
+NO_OF_RATINGS_COL_NAME = 'no_of_ratings'
+CUMULATIVE_NO_OF_RATINGS_COL_NAME = 'cumsum_no_of_ratings'
 
 YEAR_WEEK_FORMAT_STR = "%d%02d"
 
@@ -42,8 +47,8 @@ def add_year_week(df):
 
     df[YEAR_WEEK_COL_NAME] = df[TIMESTAMP_COL_NAME].apply(lambda x: year_week_from_timestamp(x))
 
-    print(df.dtypes)
-    print(df[YEAR_WEEK_COL_NAME].max())
+    # print(df.dtypes)
+    # print(df[YEAR_WEEK_COL_NAME].max())
     return df
 
 
@@ -90,7 +95,7 @@ def _prepare_all_year_weeks_df(date_time_min, date_time_max):
     return all_year_weeks
 
 
-def get_year_weeks_datetime_df(root_path, data_df=None):
+def get_year_weeks_datetime_df(root_path=ROOT_PATH, data_df=None):
     path = os.path.join(root_path, MOVIE_LENS_DATA_RELATIVE_PATH)
     if not os.path.exists(path):
         os.makedirs(path)
@@ -113,7 +118,7 @@ def get_year_weeks_datetime_df(root_path, data_df=None):
     return data
 
 
-def get_ratings_df(root_path):
+def get_ratings_df(root_path=ROOT_PATH):
     path = get_ratings_path(root_path)
 
     if os.path.exists(path):
@@ -126,7 +131,7 @@ def get_ratings_df(root_path):
     return data
 
 
-def get_ratings_path(root_path):
+def get_ratings_path(root_path=ROOT_PATH):
     path = os.path.join(root_path, MOVIE_LENS_DATA_RELATIVE_PATH)
     path = os.path.join(path, "ratings.csv")
     return path
